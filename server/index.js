@@ -5,6 +5,7 @@ const { Server } = require("socket.io");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const path = require("path");
 
 const authRoutes = require("./routes/auth.routes");
 const messageRoutes = require("./routes/message.routes");
@@ -14,22 +15,30 @@ const { initSocket } = require("./socket/socket");
 const app = express();
 const server = http.createServer(app);
 
+// Set environment
+const isDev = process.env.NODE_ENV !== "production";
+const PORT = process.env.PORT || 5000;
+const clientUrl = process.env.CLIENT_URL || (isDev ? "http://localhost:5173" : "");
+
 // ─── Socket.io setup ────────────────────────────────────────────────
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: clientUrl,
     methods: ["GET", "POST"],
     credentials: true,
   },
+  transports: ["websocket", "polling"], // Enable polling for better compatibility
 });
 
 // ─── Middleware ─────────────────────────────────────────────────────
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
-    credentials: true,
-  })
-);
+const corsOptions = {
+  origin: clientUrl,
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -39,6 +48,20 @@ app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/rooms", roomRoutes);
 app.use("/api/users", roomRoutes); // searchUsers reused via /api/users/search
+
+// ─── Static files for production (React build) ──────────────────────
+if (process.env.NODE_ENV === "production") {
+  const clientBuildPath = path.join(__dirname, "../client/dist");
+  app.use(express.static(clientBuildPath));
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(clientBuildPath, "index.html"));
+  });
+} else {
+  // Development: simple message
+  app.get("/", (req, res) => {
+    res.json({ message: "Chat API running. Frontend is on http://localhost:5173" });
+  });
+}
 
 // Health check
 app.get("/api/health", (req, res) => {
@@ -60,8 +83,6 @@ app.use((err, req, res, next) => {
 initSocket(io);
 
 // ─── Database connection ────────────────────────────────────────────
-const PORT = process.env.PORT || 5000;
-
 const connectDB = async () => {
   try {
     const mongoUri =
@@ -78,7 +99,7 @@ const connectDB = async () => {
 
 // Start server regardless of DB status
 server.listen(PORT, async () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT} [${isDev ? "DEV" : "PROD"}]`);
   console.log(`📡 Socket.io ready`);
   await connectDB();
 });

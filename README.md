@@ -89,7 +89,20 @@ npm run dev
 
 ---
 
-## ⚙️ Environment Variables
+## 🌍 Deploy Online
+
+**Quick Deploy** — Get your app live in 5 minutes!
+
+See these files for deployment instructions:
+- 📘 **[DEPLOY_QUICK_START.md](./DEPLOY_QUICK_START.md)** — Fast 3-step setup
+- 📖 **[DEPLOYMENT.md](./DEPLOYMENT.md)** — Detailed guide with all platforms
+
+**Recommended:**
+- Backend: [Render](https://render.com) (free tier)
+- Frontend: [Vercel](https://vercel.com) (free tier)
+- Database: [MongoDB Atlas](https://mongodb.com/cloud/atlas) (free tier)
+
+---
 
 ### `server/.env`
 
