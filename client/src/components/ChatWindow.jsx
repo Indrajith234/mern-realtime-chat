@@ -22,6 +22,7 @@ const ChatWindow = () => {
   const [uploading, setUploading] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const chatContainerRef = useRef(null);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const typingTimeoutRef = useRef(null);
@@ -46,7 +47,12 @@ const ChatWindow = () => {
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
   }, [messages, typingUsers]);
 
   // Handle typing events
@@ -221,7 +227,7 @@ const ChatWindow = () => {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-4">
+      <div ref={chatContainerRef} className="flex-1 overflow-y-auto px-4 py-4">
         {loadingMessages ? (
           <div className="flex items-center justify-center h-full">
             <div className="flex gap-2">
