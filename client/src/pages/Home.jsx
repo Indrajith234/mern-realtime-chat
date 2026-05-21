@@ -25,7 +25,7 @@ const Home = () => {
   }, [currentUser]);
 
   return (
-    <div className="flex h-screen h-[100dvh] w-full overflow-hidden">
+    <div className="fixed inset-0 flex w-full overflow-hidden">
       {/* Background decorative orbs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/3 w-[600px] h-[600px] rounded-full opacity-10"
