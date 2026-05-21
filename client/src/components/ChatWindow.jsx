@@ -172,18 +172,18 @@ const ChatWindow = () => {
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-3 px-5 py-3.5 border-b glass"
+      <div className="flex flex-shrink-0 items-center gap-3 px-5 py-3.5 border-b glass"
         style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
         
         {/* Back button for mobile */}
         <button
           onClick={() => setActiveRoom(null)}
-          className="flex md:hidden items-center justify-center p-2 text-slate-300 hover:text-white transition-colors rounded-xl hover:bg-white/05 mr-2"
+          className="flex md:hidden flex-shrink-0 items-center justify-center p-2 text-slate-300 hover:text-white transition-colors rounded-xl hover:bg-white/05 mr-2"
           aria-label="Back to conversations"
           title="Back to conversations"
         >
           <svg
-            className="w-6 h-6"
+            className="w-6 h-6 flex-shrink-0"
             width="24"
             height="24"
             fill="none"
@@ -200,11 +200,11 @@ const ChatWindow = () => {
           </svg>
         </button>
 
-        <div className="relative">
+        <div className="relative flex-shrink-0">
           <img
             src={roomHeader.avatar}
             alt={roomHeader.name}
-            className="w-10 h-10 rounded-full object-cover"
+            className="w-10 h-10 rounded-full object-cover flex-shrink-0"
           />
           {roomHeader.isOnline && <span className="online-dot" />}
         </div>
@@ -251,7 +251,7 @@ const ChatWindow = () => {
       </div>
 
       {/* Input Bar */}
-      <div className="px-4 py-3 border-t"
+      <div className="flex-shrink-0 px-4 py-3 border-t"
         style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="flex items-end gap-2 rounded-2xl p-2"
           style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
