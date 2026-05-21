@@ -58,8 +58,8 @@ app.get("/api/health", (req, res) => {
 if (process.env.NODE_ENV === "production") {
   const clientBuildPath = path.join(__dirname, "../client/dist");
   app.use(express.static(clientBuildPath));
-  // SPA fallback — serve index.html for all non-API routes
-  app.get("*", (req, res) => {
+  // SPA fallback — Express 5 requires named wildcard /*splat (not bare *)
+  app.get("/*splat", (req, res) => {
     res.sendFile(path.join(clientBuildPath, "index.html"));
   });
 } else {
