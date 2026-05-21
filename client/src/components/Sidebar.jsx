@@ -55,8 +55,8 @@ const Sidebar = () => {
   return (
     <>
       <div
-        className="flex flex-col h-full glass border-r border-white/08"
-        style={{ width: '320px', minWidth: '320px', borderRight: '1px solid rgba(255,255,255,0.07)' }}
+        className={`flex-col h-full glass border-r border-white/08 w-full md:w-[320px] md:min-w-[320px] ${activeRoom ? 'hidden md:flex' : 'flex'}`}
+        style={{ borderRight: '1px solid rgba(255,255,255,0.07)' }}
       >
         {/* Header */}
         <div className="px-4 py-4 border-b border-white/08 flex items-center justify-between"

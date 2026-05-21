@@ -9,6 +9,7 @@ import TypingIndicator from './TypingIndicator';
 const ChatWindow = () => {
   const {
     activeRoom,
+    setActiveRoom,
     messages,
     setMessages,
     currentUser,
@@ -153,7 +154,7 @@ const ChatWindow = () => {
   // Empty state
   if (!activeRoom) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center h-full">
+      <div className="hidden md:flex flex-1 flex-col items-center justify-center h-full">
         <div className="text-center animate-fade-in">
           <div className="w-24 h-24 rounded-full flex items-center justify-center mb-6 mx-auto"
             style={{ background: 'rgba(124, 58, 237, 0.15)', border: '1px solid rgba(124, 58, 237, 0.3)' }}>
@@ -173,6 +174,18 @@ const ChatWindow = () => {
       {/* Header */}
       <div className="flex items-center gap-3 px-5 py-3.5 border-b glass"
         style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        
+        {/* Back button for mobile */}
+        <button
+          onClick={() => setActiveRoom(null)}
+          className="md:hidden p-1 text-slate-400 hover:text-white transition-colors rounded-lg hover:bg-white/05 mr-1"
+          title="Back to conversations"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
         <div className="relative">
           <img
             src={roomHeader.avatar}

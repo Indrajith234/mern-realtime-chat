@@ -28,7 +28,7 @@ const MessageBubble = ({ message }) => {
               <img
                 src={message.content}
                 alt="Shared image"
-                className="max-w-[280px] max-h-[320px] object-cover"
+                className="max-w-full sm:max-w-[280px] max-h-[320px] object-cover"
               />
             </div>
           ) : (
@@ -63,7 +63,7 @@ const MessageBubble = ({ message }) => {
             <img
               src={message.content}
               alt="Shared image"
-              className="max-w-[280px] max-h-[320px] object-cover"
+              className="max-w-full sm:max-w-[280px] max-h-[320px] object-cover"
             />
           </div>
         ) : (
