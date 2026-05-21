@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import axios from 'axios';
+import axiosInstance from '../lib/axios';
 import toast from 'react-hot-toast';
 import useChatStore from '../store/useChatStore';
 import socket from '../socket';
@@ -31,9 +31,7 @@ const ChatWindow = () => {
     const loadMessages = async () => {
       setLoadingMessages(true);
       try {
-        const { data } = await axios.get(`/api/messages/${activeRoom._id}`, {
-          withCredentials: true,
-        });
+        const { data } = await axiosInstance.get(`/api/messages/${activeRoom._id}`);
         setMessages(data.messages || []);
       } catch (err) {
         console.error('Load messages error:', err);
@@ -118,8 +116,7 @@ const ChatWindow = () => {
     formData.append('image', file);
 
     try {
-      const { data } = await axios.post('/api/messages/upload', formData, {
-        withCredentials: true,
+      const { data } = await axiosInstance.post('/api/messages/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       await sendMessage(data.url, 'image');

@@ -49,29 +49,28 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/rooms", roomRoutes);
 app.use("/api/users", roomRoutes); // searchUsers reused via /api/users/search
 
-// ─── Static files for production (React build) ──────────────────────
-if (process.env.NODE_ENV === "production") {
-  const clientBuildPath = path.join(__dirname, "../client/dist");
-  app.use(express.static(clientBuildPath));
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(clientBuildPath, "index.html"));
-  });
-} else {
-  // Development: simple message
-  app.get("/", (req, res) => {
-    res.json({ message: "Chat API running. Frontend is on http://localhost:5173" });
-  });
-}
-
-// Health check
+// Health check (must be before static catch-all)
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ message: `Route ${req.originalUrl} not found` });
-});
+// ─── Static files for production (React build) ──────────────────────
+if (process.env.NODE_ENV === "production") {
+  const clientBuildPath = path.join(__dirname, "../client/dist");
+  app.use(express.static(clientBuildPath));
+  // SPA fallback — serve index.html for all non-API routes
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(clientBuildPath, "index.html"));
+  });
+} else {
+  app.get("/", (req, res) => {
+    res.json({ message: "Chat API running. Frontend is on http://localhost:5173" });
+  });
+  // 404 handler for dev only
+  app.use((req, res) => {
+    res.status(404).json({ message: `Route ${req.originalUrl} not found` });
+  });
+}
 
 // Global error handler
 app.use((err, req, res, next) => {

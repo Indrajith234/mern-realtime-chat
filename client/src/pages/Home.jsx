@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../lib/axios';
 import useChatStore from '../store/useChatStore';
 import Sidebar from '../components/Sidebar';
 import ChatWindow from '../components/ChatWindow';
@@ -15,7 +15,7 @@ const Home = () => {
   useEffect(() => {
     const loadRooms = async () => {
       try {
-        const { data } = await axios.get('/api/rooms', { withCredentials: true });
+        const { data } = await axiosInstance.get('/api/rooms');
         setRooms(data.rooms || []);
       } catch (err) {
         console.error('Failed to load rooms:', err);

@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import axios from 'axios';
+import axiosInstance from '../lib/axios';
 import toast from 'react-hot-toast';
 import useChatStore from '../store/useChatStore';
 
@@ -19,9 +19,7 @@ const UserSearchModal = ({ onClose }) => {
     }
     setSearching(true);
     try {
-      const { data } = await axios.get(`/api/users/search?q=${encodeURIComponent(value)}`, {
-        withCredentials: true,
-      });
+      const { data } = await axiosInstance.get(`/api/users/search?q=${encodeURIComponent(value)}`);
       setResults(data.users || []);
     } catch (err) {
       console.error('Search error:', err);
@@ -33,11 +31,10 @@ const UserSearchModal = ({ onClose }) => {
   const handleStartChat = async (user) => {
     setCreating(true);
     try {
-      const { data } = await axios.post(
-        '/api/rooms',
-        { members: [user._id], isGroupChat: false },
-        { withCredentials: true }
-      );
+      const { data } = await axiosInstance.post('/api/rooms', {
+        members: [user._id],
+        isGroupChat: false,
+      });
       addRoom(data.room);
       setActiveRoom(data.room);
       toast.success(`Chat with ${user.name} opened!`);
