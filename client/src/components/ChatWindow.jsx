@@ -178,11 +178,25 @@ const ChatWindow = () => {
         {/* Back button for mobile */}
         <button
           onClick={() => setActiveRoom(null)}
-          className="md:hidden p-1 text-slate-400 hover:text-white transition-colors rounded-lg hover:bg-white/05 mr-1"
+          className="flex md:hidden items-center justify-center p-2 text-slate-300 hover:text-white transition-colors rounded-xl hover:bg-white/05 mr-2"
+          aria-label="Back to conversations"
           title="Back to conversations"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+          <svg
+            className="w-6 h-6"
+            width="24"
+            height="24"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2.5"
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
         </button>
 
