@@ -4,6 +4,7 @@ const {
   getMessages,
   uploadImage,
   upload,
+  deleteMessage,
 } = require("../controllers/message.controller");
 const { protect } = require("../middleware/authMiddleware");
 
@@ -12,5 +13,8 @@ router.get("/:roomId", protect, getMessages);
 
 // POST /api/messages/upload — upload image to Cloudinary
 router.post("/upload", protect, upload.single("image"), uploadImage);
+
+// DELETE /api/messages/:messageId — delete message
+router.delete("/:messageId", protect, deleteMessage);
 
 module.exports = router;

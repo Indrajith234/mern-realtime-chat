@@ -30,6 +30,8 @@ const io = new Server(server, {
   transports: ["websocket", "polling"], // Enable polling for better compatibility
 });
 
+app.set("io", io);
+
 // ─── Middleware ─────────────────────────────────────────────────────
 const corsOptions = {
   origin: clientUrl,

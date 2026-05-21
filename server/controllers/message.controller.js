@@ -107,4 +107,76 @@ const uploadImage = async (req, res) => {
   }
 };
 
-module.exports = { getMessages, uploadImage, upload };
+// @desc    Delete a message
+// @route   DELETE /api/messages/:messageId
+// @access  Private
+const deleteMessage = async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const userId = req.user._id;
+
+    // Find the message
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ message: "Message not found" });
+    }
+
+    // Verify ownership
+    if (message.senderId.toString() !== userId.toString()) {
+      return res
+        .status(403)
+        .json({ message: "You are not authorized to delete this message" });
+    }
+
+    const roomId = message.roomId;
+
+    // Delete message from database
+    await Message.findByIdAndDelete(messageId);
+    console.log(`🗑️ Message ${messageId} deleted from DB`);
+
+    // Check if it was the room's lastMessage
+    const room = await Room.findById(roomId);
+    let populatedLastMessage = null;
+
+    if (room && room.lastMessage && room.lastMessage.toString() === messageId) {
+      // Find the new latest message in the room
+      const lastMessage = await Message.findOne({ roomId })
+        .sort({ createdAt: -1 });
+
+      if (lastMessage) {
+        room.lastMessage = lastMessage._id;
+        await room.save();
+
+        // Populate new last message
+        populatedLastMessage = await Message.findById(lastMessage._id)
+          .populate("senderId", "name avatar isOnline")
+          .lean();
+      } else {
+        room.lastMessage = null;
+        await room.save();
+      }
+    }
+
+    // Broadcast the delete event to all clients in the room via Socket.io
+    const io = req.app.get("io");
+    if (io) {
+      io.to(roomId.toString()).emit("message_deleted", {
+        messageId,
+        roomId,
+        lastMessage: populatedLastMessage,
+      });
+    }
+
+    res.status(200).json({
+      message: "Message deleted successfully",
+      messageId,
+      roomId,
+      lastMessage: populatedLastMessage,
+    });
+  } catch (error) {
+    console.error("Delete message error:", error.message);
+    res.status(500).json({ message: "Server error deleting message" });
+  }
+};
+
+module.exports = { getMessages, uploadImage, upload, deleteMessage };

@@ -3,11 +3,13 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import useChatStore from '../store/useChatStore';
 import UserSearchModal from './UserSearchModal';
+import ProfileModal from './ProfileModal';
 import useAuth from '../hooks/useAuth';
 
 const Sidebar = () => {
   const { rooms, activeRoom, setActiveRoom, currentUser, onlineUsers, unreadCounts, clearUnread } = useChatStore();
   const [showSearch, setShowSearch] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const { logout } = useAuth();
 
   const handleRoomClick = (room) => {
@@ -75,14 +77,24 @@ const Sidebar = () => {
               <p className="text-emerald-400 text-xs">● Online</p>
             </div>
           </div>
-          <button
-            onClick={logout}
-            id="logout-btn"
-            title="Logout"
-            className="text-slate-400 hover:text-red-400 transition-colors p-2 rounded-lg hover:bg-white/05 text-sm"
-          >
-            ⏻
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setShowProfile(true)}
+              id="profile-btn"
+              title="Profile Settings"
+              className="text-slate-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/05 text-sm"
+            >
+              ⚙️
+            </button>
+            <button
+              onClick={logout}
+              id="logout-btn"
+              title="Logout"
+              className="text-slate-400 hover:text-red-400 transition-colors p-2 rounded-lg hover:bg-white/05 text-sm"
+            >
+              ⏻
+            </button>
+          </div>
         </div>
 
         {/* Search / New Chat button */}
@@ -163,6 +175,7 @@ const Sidebar = () => {
       </div>
 
       {showSearch && <UserSearchModal onClose={() => setShowSearch(false)} />}
+      {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
     </>
   );
 };

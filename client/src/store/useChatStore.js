@@ -74,6 +74,80 @@ const useChatStore = create((set, get) => ({
     set((state) => ({
       unreadCounts: { ...state.unreadCounts, [roomId]: 0 },
     })),
+
+  // Delete message from state
+  deleteMessageInState: (messageId, roomId, lastMessage) =>
+    set((state) => {
+      const updatedMessages = state.messages.filter((m) => m._id !== messageId);
+      const updatedRooms = state.rooms.map((r) =>
+        r._id === roomId ? { ...r, lastMessage } : r
+      );
+      return {
+        messages: updatedMessages,
+        rooms: updatedRooms,
+      };
+    }),
+
+  // Update user profile globally in state
+  updateUserInState: (updatedUser) =>
+    set((state) => {
+      const isSelf = state.currentUser?._id === updatedUser._id;
+      const currentUser = isSelf ? { ...state.currentUser, ...updatedUser } : state.currentUser;
+
+      const updatedRooms = state.rooms.map((room) => {
+        const updatedMembers = room.members?.map((member) =>
+          member._id === updatedUser._id ? { ...member, ...updatedUser } : member
+        );
+        
+        let updatedLastMessage = room.lastMessage;
+        if (room.lastMessage && typeof room.lastMessage !== 'string') {
+          const senderId = room.lastMessage.senderId;
+          const senderObjId = typeof senderId === 'object' ? senderId._id : senderId;
+          if (senderObjId === updatedUser._id) {
+            updatedLastMessage = {
+              ...room.lastMessage,
+              senderId: typeof senderId === 'object' ? { ...senderId, ...updatedUser } : senderId
+            };
+          }
+        }
+
+        return {
+          ...room,
+          members: updatedMembers,
+          lastMessage: updatedLastMessage,
+        };
+      });
+
+      let updatedActiveRoom = state.activeRoom;
+      if (state.activeRoom) {
+        const updatedMembers = state.activeRoom.members?.map((member) =>
+          member._id === updatedUser._id ? { ...member, ...updatedUser } : member
+        );
+        updatedActiveRoom = {
+          ...state.activeRoom,
+          members: updatedMembers,
+        };
+      }
+
+      const updatedMessages = state.messages.map((msg) => {
+        const senderId = msg.senderId;
+        const senderObjId = typeof senderId === 'object' ? senderId._id : senderId;
+        if (senderObjId === updatedUser._id) {
+          return {
+            ...msg,
+            senderId: typeof senderId === 'object' ? { ...senderId, ...updatedUser } : senderId,
+          };
+        }
+        return msg;
+      });
+
+      return {
+        currentUser,
+        rooms: updatedRooms,
+        activeRoom: updatedActiveRoom,
+        messages: updatedMessages,
+      };
+    }),
 }));
 
 export default useChatStore;

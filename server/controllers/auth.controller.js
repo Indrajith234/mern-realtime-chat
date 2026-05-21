@@ -1,6 +1,20 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const cloudinary = require("cloudinary").v2;
+
+// Configure Cloudinary (only if credentials present)
+if (
+  process.env.CLOUDINARY_CLOUD_NAME &&
+  process.env.CLOUDINARY_API_KEY &&
+  process.env.CLOUDINARY_API_SECRET
+) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+}
 
 // Helper to generate JWT and set httpOnly cookie
 const sendTokenResponse = (user, statusCode, res) => {
@@ -145,4 +159,69 @@ const getMe = async (req, res) => {
   }
 };
 
-module.exports = { register, login, logout, getMe };
+// @desc    Update user profile settings
+// @route   PUT /api/auth/profile
+// @access  Private
+const updateProfile = async (req, res) => {
+  try {
+    const { name } = req.body;
+    const userId = req.user._id;
+
+    const updates = {};
+    if (name) {
+      updates.name = name.trim();
+    }
+
+    if (req.file) {
+      if (
+        !process.env.CLOUDINARY_CLOUD_NAME ||
+        !process.env.CLOUDINARY_API_KEY ||
+        !process.env.CLOUDINARY_API_SECRET
+      ) {
+        return res.status(503).json({
+          message:
+            "Image uploads not configured. Please set Cloudinary environment variables in .env",
+        });
+      }
+
+      // Upload buffer to Cloudinary
+      const result = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "mern-chat-avatars", resource_type: "image" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        stream.end(req.file.buffer);
+      });
+
+      updates.avatar = result.secure_url;
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ message: "No update parameters provided" });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updates },
+      { new: true }
+    ).select("-password");
+
+    console.log(`👤 User profile updated: ${updatedUser.name}`);
+
+    // Broadcast update via Socket.io to all online clients
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("user_updated", updatedUser);
+    }
+
+    res.status(200).json({ user: updatedUser });
+  } catch (error) {
+    console.error("Update profile error:", error.message);
+    res.status(500).json({ message: "Server error during profile update" });
+  }
+};
+
+module.exports = { register, login, logout, getMe, updateProfile };

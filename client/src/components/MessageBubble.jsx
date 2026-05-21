@@ -1,5 +1,7 @@
 import React from 'react';
 import useChatStore from '../store/useChatStore';
+import axiosInstance from '../lib/axios';
+import toast from 'react-hot-toast';
 
 const MessageBubble = ({ message }) => {
   const { currentUser, onlineUsers } = useChatStore();
@@ -19,9 +21,29 @@ const MessageBubble = ({ message }) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this message?")) {
+      try {
+        await axiosInstance.delete(`/api/messages/${message._id}`);
+        toast.success("Message deleted");
+      } catch (err) {
+        toast.error(err.response?.data?.message || 'Failed to delete message');
+      }
+    }
+  };
+
   if (isSent) {
     return (
-      <div className="flex justify-end mb-3 animate-fade-in group">
+      <div className="flex justify-end mb-3 animate-fade-in group items-center gap-2">
+        {/* Delete action for sender */}
+        <button
+          onClick={handleDelete}
+          className="text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all duration-200 p-1.5 rounded-lg hover:bg-white/05 cursor-pointer text-xs self-center"
+          title="Delete message"
+        >
+          🗑️
+        </button>
+
         <div className="max-w-[70%] flex flex-col items-end gap-1">
           {message.type === 'image' ? (
             <div className="rounded-2xl rounded-br-sm overflow-hidden shadow-lg">

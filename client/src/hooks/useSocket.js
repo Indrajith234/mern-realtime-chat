@@ -58,11 +58,25 @@ const useSocket = () => {
       setOnlineUsers(state.onlineUsers.filter((id) => id !== userId));
     };
 
+    // ─── message_deleted ─────────────────────────────────────────────
+    const handleMessageDeleted = ({ messageId, roomId, lastMessage }) => {
+      const { deleteMessageInState } = useChatStore.getState();
+      deleteMessageInState(messageId, roomId, lastMessage);
+    };
+
+    // ─── user_updated ────────────────────────────────────────────────
+    const handleUserUpdated = (updatedUser) => {
+      const { updateUserInState } = useChatStore.getState();
+      updateUserInState(updatedUser);
+    };
+
     socket.on('new_message', handleNewMessage);
     socket.on('user_typing', handleUserTyping);
     socket.on('stop_typing', handleStopTyping);
     socket.on('online_users', handleOnlineUsers);
     socket.on('user_disconnected', handleUserDisconnected);
+    socket.on('message_deleted', handleMessageDeleted);
+    socket.on('user_updated', handleUserUpdated);
 
     return () => {
       socket.off('new_message', handleNewMessage);
@@ -70,6 +84,8 @@ const useSocket = () => {
       socket.off('stop_typing', handleStopTyping);
       socket.off('online_users', handleOnlineUsers);
       socket.off('user_disconnected', handleUserDisconnected);
+      socket.off('message_deleted', handleMessageDeleted);
+      socket.off('user_updated', handleUserUpdated);
     };
   }, [currentUser]);
 
