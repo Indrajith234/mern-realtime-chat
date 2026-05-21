@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import axiosInstance from '../lib/axios';
 import toast from 'react-hot-toast';
 import useChatStore from '../store/useChatStore';
+import useAuth from '../hooks/useAuth';
 
 const ProfileModal = ({ onClose }) => {
   const { currentUser, setCurrentUser } = useChatStore();
@@ -10,6 +11,14 @@ const ProfileModal = ({ onClose }) => {
   const [avatarPreview, setAvatarPreview] = useState(currentUser?.avatar || '');
   const [updating, setUpdating] = useState(false);
   const fileInputRef = useRef(null);
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    if (window.confirm('Are you sure you want to log out?')) {
+      onClose();
+      await logout();
+    }
+  };
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -135,29 +144,38 @@ const ProfileModal = ({ onClose }) => {
           </div>
 
           {/* Buttons */}
-          <div className="flex items-center justify-end gap-3 mt-2 border-t border-white/05 pt-4">
+          <div className="flex items-center justify-between mt-2 border-t border-white/05 pt-4">
             <button
               type="button"
-              onClick={onClose}
-              className="px-5 py-2.5 rounded-xl font-medium text-slate-400 hover:text-white transition-colors"
+              onClick={handleLogout}
+              className="px-4 py-2.5 rounded-xl font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors flex items-center gap-1.5"
             >
-              Cancel
+              ⏻ Logout
             </button>
-            <button
-              type="submit"
-              disabled={updating}
-              className="btn-primary flex items-center justify-center gap-2 min-w-[120px]"
-            >
-              {updating ? (
-                <>
-                  <span className="dot-1 w-1.5 h-1.5 rounded-full bg-white inline-block animate-bounce" />
-                  <span className="dot-2 w-1.5 h-1.5 rounded-full bg-white inline-block animate-bounce [animation-delay:0.2s]" />
-                  <span className="dot-3 w-1.5 h-1.5 rounded-full bg-white inline-block animate-bounce [animation-delay:0.4s]" />
-                </>
-              ) : (
-                'Save Changes'
-              )}
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-5 py-2.5 rounded-xl font-medium text-slate-400 hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={updating}
+                className="btn-primary flex items-center justify-center gap-2 min-w-[120px]"
+              >
+                {updating ? (
+                  <>
+                    <span className="dot-1 w-1.5 h-1.5 rounded-full bg-white inline-block animate-bounce" />
+                    <span className="dot-2 w-1.5 h-1.5 rounded-full bg-white inline-block animate-bounce [animation-delay:0.2s]" />
+                    <span className="dot-3 w-1.5 h-1.5 rounded-full bg-white inline-block animate-bounce [animation-delay:0.4s]" />
+                  </>
+                ) : (
+                  'Save Changes'
+                )}
+              </button>
+            </div>
           </div>
         </form>
       </div>
