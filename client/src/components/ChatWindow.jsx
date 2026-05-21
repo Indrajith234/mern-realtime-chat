@@ -79,6 +79,11 @@ const ChatWindow = () => {
     }, 2000);
   };
 
+  const handleBlur = () => {
+    // Reset window scroll to fix mobile browser layout shift when soft keyboard closes
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  };
+
   const sendMessage = async (content, type = 'text') => {
     if (!content.trim() && type === 'text') return;
     if (!activeRoom?._id) return;
@@ -292,10 +297,11 @@ const ChatWindow = () => {
             id="message-input"
             value={input}
             onChange={handleTyping}
+            onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             placeholder="Type a message... (Enter to send)"
             rows={1}
-            className="flex-1 bg-transparent text-white placeholder-slate-500 outline-none resize-none text-sm py-1.5 px-1 leading-relaxed"
+            className="flex-1 bg-transparent text-white placeholder-slate-500 outline-none resize-none text-base md:text-sm py-1.5 px-1 leading-relaxed"
             style={{ maxHeight: '120px', overflowY: 'auto' }}
           />
 
