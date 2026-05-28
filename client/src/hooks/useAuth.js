@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import axiosInstance from '../lib/axios';
 import toast from 'react-hot-toast';
-import useChatStore from '../store/useChatStore';
+import { useDispatch, useSelector } from 'react-redux';
+import { setCurrentUser, clearCurrentUser } from '../store/authSlice';
 import socket from '../socket';
 
 const useAuth = () => {
   const [loading, setLoading] = useState(false);
-  const { setCurrentUser, clearCurrentUser, currentUser } = useChatStore();
+  const dispatch = useDispatch();
+  const currentUser = useSelector((state) => state.auth.currentUser);
 
   const register = async ({ name, email, password }) => {
     setLoading(true);
@@ -16,8 +18,7 @@ const useAuth = () => {
         email,
         password,
       });
-      setCurrentUser(data.user);
-      // Connect socket after auth
+      dispatch(setCurrentUser(data.user));
       socket.connect();
       socket.emit('user_connected', data.user._id);
       toast.success(`Welcome, ${data.user.name}! 🎉`);
@@ -38,8 +39,7 @@ const useAuth = () => {
         email,
         password,
       });
-      setCurrentUser(data.user);
-      // Connect socket after auth
+      dispatch(setCurrentUser(data.user));
       socket.connect();
       socket.emit('user_connected', data.user._id);
       toast.success(`Welcome back, ${data.user.name}!`);
@@ -58,7 +58,7 @@ const useAuth = () => {
     try {
       await axiosInstance.post('/api/auth/logout');
       socket.disconnect();
-      clearCurrentUser();
+      dispatch(clearCurrentUser());
       toast.success('Logged out successfully');
       return { success: true };
     } catch (err) {
@@ -73,12 +73,12 @@ const useAuth = () => {
   const checkAuth = async () => {
     try {
       const { data } = await axiosInstance.get('/api/auth/me');
-      setCurrentUser(data.user);
+      dispatch(setCurrentUser(data.user));
       socket.connect();
       socket.emit('user_connected', data.user._id);
       return data.user;
     } catch {
-      clearCurrentUser();
+      dispatch(clearCurrentUser());
       return null;
     }
   };

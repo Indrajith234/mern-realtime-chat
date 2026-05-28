@@ -1,14 +1,17 @@
 import React, { useState, useCallback } from 'react';
 import axiosInstance from '../lib/axios';
 import toast from 'react-hot-toast';
-import useChatStore from '../store/useChatStore';
+import { useSelector, useDispatch } from 'react-redux';
+import { addRoom, setActiveRoom } from '../store/chatSlice';
 
 const UserSearchModal = ({ onClose }) => {
+  const dispatch = useDispatch();
+  const currentUser = useSelector((state) => state.auth.currentUser);
+
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [creating, setCreating] = useState(false);
-  const { currentUser, addRoom, setActiveRoom } = useChatStore();
 
   // Debounced search
   const handleSearch = useCallback(async (value) => {
@@ -35,8 +38,8 @@ const UserSearchModal = ({ onClose }) => {
         members: [user._id],
         isGroupChat: false,
       });
-      addRoom(data.room);
-      setActiveRoom(data.room);
+      dispatch(addRoom(data.room));
+      dispatch(setActiveRoom(data.room));
       toast.success(`Chat with ${user.name} opened!`);
       onClose();
     } catch (err) {

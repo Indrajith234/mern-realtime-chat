@@ -1,12 +1,14 @@
 import React, { useEffect } from 'react';
 import axiosInstance from '../lib/axios';
-import useChatStore from '../store/useChatStore';
+import { useSelector, useDispatch } from 'react-redux';
+import { setRooms } from '../store/chatSlice';
 import Sidebar from '../components/Sidebar';
 import ChatWindow from '../components/ChatWindow';
 import useSocket from '../hooks/useSocket';
 
 const Home = () => {
-  const { currentUser, setRooms } = useChatStore();
+  const dispatch = useDispatch();
+  const currentUser = useSelector((state) => state.auth.currentUser);
 
   // Register all socket event handlers
   useSocket();
@@ -16,13 +18,13 @@ const Home = () => {
     const loadRooms = async () => {
       try {
         const { data } = await axiosInstance.get('/api/rooms');
-        setRooms(data.rooms || []);
+        dispatch(setRooms(data.rooms || []));
       } catch (err) {
         console.error('Failed to load rooms:', err);
       }
     };
     if (currentUser) loadRooms();
-  }, [currentUser]);
+  }, [currentUser, dispatch]);
 
   return (
     <div className="fixed inset-0 flex w-full overflow-hidden">

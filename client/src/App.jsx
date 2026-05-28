@@ -1,22 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Provider, useSelector } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
+import store from './store/useChatStore';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
 import useAuth from './hooks/useAuth';
-import useChatStore from './store/useChatStore';
 
 // Protected route wrapper
 const ProtectedRoute = ({ children }) => {
-  const { currentUser } = useChatStore();
+  const currentUser = useSelector((state) => state.auth.currentUser);
   if (!currentUser) return <Navigate to="/login" replace />;
   return children;
 };
 
 // Public route wrapper (redirect to home if already logged in)
 const PublicRoute = ({ children }) => {
-  const { currentUser } = useChatStore();
+  const currentUser = useSelector((state) => state.auth.currentUser);
   if (currentUser) return <Navigate to="/" replace />;
   return children;
 };
@@ -85,28 +86,30 @@ const AppContent = () => {
 
 const App = () => {
   return (
-    <BrowserRouter>
-      <AppContent />
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          style: {
-            background: 'rgba(17, 20, 54, 0.95)',
-            color: '#e2e8f0',
-            border: '1px solid rgba(124, 58, 237, 0.3)',
-            backdropFilter: 'blur(12px)',
-            borderRadius: '12px',
-            fontSize: '14px',
-          },
-          success: {
-            iconTheme: { primary: '#22c55e', secondary: '#111436' },
-          },
-          error: {
-            iconTheme: { primary: '#ef4444', secondary: '#111436' },
-          },
-        }}
-      />
-    </BrowserRouter>
+    <Provider store={store}>
+      <BrowserRouter>
+        <AppContent />
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            style: {
+              background: 'rgba(17, 20, 54, 0.95)',
+              color: '#e2e8f0',
+              border: '1px solid rgba(124, 58, 237, 0.3)',
+              backdropFilter: 'blur(12px)',
+              borderRadius: '12px',
+              fontSize: '14px',
+            },
+            success: {
+              iconTheme: { primary: '#22c55e', secondary: '#111436' },
+            },
+            error: {
+              iconTheme: { primary: '#ef4444', secondary: '#111436' },
+            },
+          }}
+        />
+      </BrowserRouter>
+    </Provider>
   );
 };
 

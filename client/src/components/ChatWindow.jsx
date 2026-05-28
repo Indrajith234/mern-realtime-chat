@@ -1,21 +1,19 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axiosInstance from '../lib/axios';
 import toast from 'react-hot-toast';
-import useChatStore from '../store/useChatStore';
+import { useSelector, useDispatch } from 'react-redux';
+import { setActiveRoom, setMessages, addMessage } from '../store/chatSlice';
 import socket from '../socket';
 import MessageBubble from './MessageBubble';
 import TypingIndicator from './TypingIndicator';
 
 const ChatWindow = () => {
-  const {
-    activeRoom,
-    setActiveRoom,
-    messages,
-    setMessages,
-    currentUser,
-    typingUsers,
-    onlineUsers,
-  } = useChatStore();
+  const dispatch = useDispatch();
+  const activeRoom = useSelector((state) => state.chat.activeRoom);
+  const messages = useSelector((state) => state.chat.messages);
+  const currentUser = useSelector((state) => state.auth.currentUser);
+  const typingUsers = useSelector((state) => state.chat.typingUsers);
+  const onlineUsers = useSelector((state) => state.chat.onlineUsers);
 
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
@@ -34,7 +32,7 @@ const ChatWindow = () => {
       setLoadingMessages(true);
       try {
         const { data } = await axiosInstance.get(`/api/messages/${activeRoom._id}`);
-        setMessages(data.messages || []);
+        dispatch(setMessages(data.messages || []));
       } catch (err) {
         console.error('Load messages error:', err);
         toast.error('Failed to load messages');
@@ -43,7 +41,7 @@ const ChatWindow = () => {
       }
     };
     loadMessages();
-  }, [activeRoom?._id]);
+  }, [activeRoom?._id, dispatch]);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -68,7 +66,6 @@ const ChatWindow = () => {
       });
     }
 
-    // Clear typing after 2 seconds of inactivity
     clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
       setIsTyping(false);
@@ -80,7 +77,6 @@ const ChatWindow = () => {
   };
 
   const handleBlur = () => {
-    // Reset window scroll to fix mobile browser layout shift when soft keyboard closes
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   };
 
@@ -89,7 +85,6 @@ const ChatWindow = () => {
     if (!activeRoom?._id) return;
 
     setSending(true);
-    // Stop typing indicator
     setIsTyping(false);
     clearTimeout(typingTimeoutRef.current);
     socket.emit('stop_typing', {
@@ -185,10 +180,10 @@ const ChatWindow = () => {
       {/* Header */}
       <div className="flex flex-shrink-0 items-center gap-3 px-5 py-3.5 border-b glass"
         style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-        
+
         {/* Back button for mobile */}
         <button
-          onClick={() => setActiveRoom(null)}
+          onClick={() => dispatch(setActiveRoom(null))}
           className="flex md:hidden flex-shrink-0 items-center justify-center p-2 text-slate-300 hover:text-white transition-colors rounded-xl hover:bg-white/05 mr-2"
           aria-label="Back to conversations"
           title="Back to conversations"

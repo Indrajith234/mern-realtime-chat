@@ -1,18 +1,24 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import toast from 'react-hot-toast';
-import useChatStore from '../store/useChatStore';
+import { useSelector, useDispatch } from 'react-redux';
+import { setActiveRoom, clearUnread } from '../store/chatSlice';
 import UserSearchModal from './UserSearchModal';
 import ProfileModal from './ProfileModal';
 
 const Sidebar = () => {
-  const { rooms, activeRoom, setActiveRoom, currentUser, onlineUsers, unreadCounts, clearUnread } = useChatStore();
+  const dispatch = useDispatch();
+  const rooms = useSelector((state) => state.chat.rooms);
+  const activeRoom = useSelector((state) => state.chat.activeRoom);
+  const currentUser = useSelector((state) => state.auth.currentUser);
+  const onlineUsers = useSelector((state) => state.chat.onlineUsers);
+  const unreadCounts = useSelector((state) => state.chat.unreadCounts);
+
   const [showSearch, setShowSearch] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
 
   const handleRoomClick = (room) => {
-    setActiveRoom(room);
-    clearUnread(room._id);
+    dispatch(setActiveRoom(room));
+    dispatch(clearUnread(room._id));
   };
 
   const getRoomDisplay = (room) => {

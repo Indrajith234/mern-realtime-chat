@@ -1,73 +1,73 @@
 import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import socket from '../socket';
-import useChatStore from '../store/useChatStore';
+import {
+  addMessage,
+  setTyping,
+  clearTyping,
+  setOnlineUsers,
+  updateRoomLastMessage,
+  incrementUnread,
+  deleteMessageInState,
+  updateUserInState,
+} from '../store/chatSlice';
+import store from '../store/useChatStore';
 
 const useSocket = () => {
-  const {
-    currentUser,
-    activeRoom,
-    addMessage,
-    setTyping,
-    clearTyping,
-    setOnlineUsers,
-    updateRoomLastMessage,
-    incrementUnread,
-  } = useChatStore();
+  const dispatch = useDispatch();
+  const currentUser = useSelector((state) => state.auth.currentUser);
+  const activeRoom = useSelector((state) => state.chat.activeRoom);
 
   useEffect(() => {
     if (!currentUser) return;
 
     // ─── new_message ────────────────────────────────────────────────
     const handleNewMessage = (message) => {
-      const state = useChatStore.getState();
-      addMessage(message);
+      dispatch(addMessage(message));
+      dispatch(updateRoomLastMessage({ roomId: message.roomId, message }));
 
-      // Update room's last message preview
-      updateRoomLastMessage(message.roomId, message);
-
-      // If this message is NOT in the active room, increment unread
-      if (!state.activeRoom || state.activeRoom._id !== message.roomId) {
-        incrementUnread(message.roomId);
+      // If message is NOT in the active room, increment unread
+      const currentActiveRoom = store.getState().chat.activeRoom;
+      if (!currentActiveRoom || currentActiveRoom._id !== message.roomId) {
+        dispatch(incrementUnread(message.roomId));
       }
     };
 
     // ─── user_typing ─────────────────────────────────────────────────
     const handleUserTyping = ({ userId, userName }) => {
-      const state = useChatStore.getState();
-      if (state.activeRoom) {
-        setTyping(state.activeRoom._id, userId, userName);
+      const currentActiveRoom = store.getState().chat.activeRoom;
+      if (currentActiveRoom) {
+        dispatch(setTyping({ roomId: currentActiveRoom._id, userId, userName }));
       }
     };
 
     // ─── stop_typing ─────────────────────────────────────────────────
     const handleStopTyping = ({ userId }) => {
-      const state = useChatStore.getState();
-      if (state.activeRoom) {
-        clearTyping(state.activeRoom._id, userId);
+      const currentActiveRoom = store.getState().chat.activeRoom;
+      if (currentActiveRoom) {
+        dispatch(clearTyping({ roomId: currentActiveRoom._id, userId }));
       }
     };
 
     // ─── online_users ─────────────────────────────────────────────────
     const handleOnlineUsers = (userIds) => {
-      setOnlineUsers(userIds);
+      dispatch(setOnlineUsers(userIds));
     };
 
     // ─── user_disconnected ────────────────────────────────────────────
     const handleUserDisconnected = ({ userId }) => {
-      const state = useChatStore.getState();
-      setOnlineUsers(state.onlineUsers.filter((id) => id !== userId));
+      const currentOnlineUsers = store.getState().chat.onlineUsers;
+      dispatch(setOnlineUsers(currentOnlineUsers.filter((id) => id !== userId)));
     };
 
     // ─── message_deleted ─────────────────────────────────────────────
     const handleMessageDeleted = ({ messageId, roomId, lastMessage }) => {
-      const { deleteMessageInState } = useChatStore.getState();
-      deleteMessageInState(messageId, roomId, lastMessage);
+      dispatch(deleteMessageInState({ messageId, roomId, lastMessage }));
     };
 
     // ─── user_updated ────────────────────────────────────────────────
     const handleUserUpdated = (updatedUser) => {
-      const { updateUserInState } = useChatStore.getState();
-      updateUserInState(updatedUser);
+      dispatch(updateUserInState(updatedUser));
     };
 
     socket.on('new_message', handleNewMessage);
@@ -87,7 +87,7 @@ const useSocket = () => {
       socket.off('message_deleted', handleMessageDeleted);
       socket.off('user_updated', handleUserUpdated);
     };
-  }, [currentUser]);
+  }, [currentUser, dispatch]);
 
   // Join room socket event when activeRoom changes
   useEffect(() => {

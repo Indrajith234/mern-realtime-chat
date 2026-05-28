@@ -1,11 +1,13 @@
 import React, { useState, useRef } from 'react';
 import axiosInstance from '../lib/axios';
 import toast from 'react-hot-toast';
-import useChatStore from '../store/useChatStore';
+import { useSelector, useDispatch } from 'react-redux';
+import { setCurrentUser } from '../store/authSlice';
 import useAuth from '../hooks/useAuth';
 
 const ProfileModal = ({ onClose }) => {
-  const { currentUser, setCurrentUser } = useChatStore();
+  const dispatch = useDispatch();
+  const currentUser = useSelector((state) => state.auth.currentUser);
   const [name, setName] = useState(currentUser?.name || '');
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(currentUser?.avatar || '');
@@ -61,7 +63,7 @@ const ProfileModal = ({ onClose }) => {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      setCurrentUser(data.user);
+      dispatch(setCurrentUser(data.user));
       toast.success('Profile updated successfully!');
       onClose();
     } catch (err) {
@@ -92,7 +94,7 @@ const ProfileModal = ({ onClose }) => {
 
         {/* Content */}
         <form onSubmit={handleSubmit} className="px-6 py-6 flex flex-col gap-5">
-          {/* Avatar Upload Container */}
+          {/* Avatar Upload */}
           <div className="flex flex-col items-center gap-2">
             <div className="relative group cursor-pointer" onClick={handleAvatarClick}>
               <img
