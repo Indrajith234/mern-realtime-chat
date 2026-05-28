@@ -1,10 +1,11 @@
 import React from 'react';
-import useChatStore from '../store/useChatStore';
+import { useSelector } from 'react-redux';
 import axiosInstance from '../lib/axios';
 import toast from 'react-hot-toast';
 
 const MessageBubble = ({ message }) => {
-  const { currentUser, onlineUsers } = useChatStore();
+  const currentUser = useSelector((state) => state.auth.currentUser);
+  const onlineUsers = useSelector((state) => state.chat.onlineUsers);
 
   if (!message) return null;
 
